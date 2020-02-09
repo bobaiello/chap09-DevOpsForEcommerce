@@ -1,0 +1,2 @@
+setupSSHKeys.sh
+ssh-keygen
