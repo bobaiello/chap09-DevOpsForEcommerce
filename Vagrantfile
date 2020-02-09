@@ -5,6 +5,7 @@
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
+
 Vagrant.configure("2") do |config|
   # The most common configuration options are documented and commented below.
   # For a complete reference, please see the online documentation at
@@ -12,7 +13,12 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "hashicorp/bionic64"
+  # We are exposing ports 8080 and 9990 by forwarding them
+  config.vm.network "forwarded_port", guest: 9990, host: 9990,
+      auto_correct: true
+  config.vm.network "forwarded_port", guest: 8080, host: 8080,
+      auto_correct: true
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -49,16 +55,43 @@ Vagrant.configure("2") do |config|
   # config.vm.provider "ansible_local" do |ansible|
   #   ansible.playbook = "provisioning/playbook.yml"
   # end
-  config.vm.define "ansiblectl" do |ansiblectl|
-    ansiblectl.vm.box = "hashicorp/bionic64"
+  config.vm.define "ansctl" do |ansctl|
+    ansctl.vm.box = "hashicorp/bionic64"
+    ansctl.vm.hostname = 'ansctl'
+    ansctl.vm.network :public_network, ip: "192.168.100.100"
+    ansctl.vm.network "forwarded_port", guest: 8080, host: 8080,
+        auto_correct: true
+    ansctl.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 1024]
+      v.customize ["modifyvm", :id, "--name", "ansctl"]
+	end
   end
 
   config.vm.define "web" do |web|
     web.vm.box = "hashicorp/bionic64"
+    web.vm.hostname = 'web'
+    web.vm.network :public_network, ip: "192.168.100.101"
+    web.vm.network "forwarded_port", guest: 8080, host: 8080,
+        auto_correct: true
+    web.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 1024]
+      v.customize ["modifyvm", :id, "--name", "web"]
+	end
   end
 
   config.vm.define "db" do |db|
     db.vm.box = "hashicorp/bionic64"
+    db.vm.hostname = 'db'
+    db.vm.network :public_network, ip: "192.168.100.102"
+    db.vm.network "forwarded_port", guest: 8080, host: 8080,
+        auto_correct: true
+    db.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 1024]
+      v.customize ["modifyvm", :id, "--name", "db"]
+	end
   end
 
 end
